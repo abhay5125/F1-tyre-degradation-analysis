@@ -1,4 +1,4 @@
-# Eyxod Dashboard Baseline
+#Dashboard Baseline
 
 A reusable baseline for data ingestion → transformation → dashboarding. Drop in any dataset, edit `config.yml`, run the ingest step, and launch the Streamlit app.
 
