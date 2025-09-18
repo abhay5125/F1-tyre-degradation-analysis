@@ -1,0 +1,56 @@
+project_name: "Sample Metrics"
+database_path: "db/data.db"
+
+data_sources:                       #CSV home + how to load them
+  - path: "data_raw/sample.csv"     # change to your file
+    table: "events_raw"
+    format: "csv"                   # csv or json (ndjson not yet)
+    datetime_cols: ["timestamp"]
+    categorical_cols: ["category"]
+    keep_cols: ["timestamp", "value", "category"]
+
+default_filters:                    #Which column is the date filter
+  date_col: "timestamp"
+  range: ["2024-01-05", "2024-01-10"]
+
+kpis:                                #Tiny SQL queries(one value each)
+  - label: "Total Rows"
+    sql: "SELECT COUNT(*) FROM events_raw"
+  - label: "Avg Value"
+    sql: "SELECT AVG(value) FROM events_raw"
+  - label: "Rows in Jan 2024"
+    sql: "SELECT COUNT(*) FROM events_raw WHERE DATE(timestamp) BETWEEN DATE('2024-01-07') AND DATE('2024-01-31')"
+  - label: "Min Value"
+    sql: "SELECT MIN(value) FROM events_raw"
+  - label: "Rows In First 3 Days"
+    sql: SELECT COUNT(*) FROM events_raw WHERE DATE(timestamp) BETWEEN DATE('2024-01-01') AND DATE('2024-01-03')
+
+charts:                               #SQL + define columns as x/y
+  - name: "Daily Count"
+    type: "line"
+    query: |
+      SELECT DATE(timestamp) AS date, COUNT(*) AS rows
+      FROM events_raw
+      GROUP BY DATE(timestamp)
+      ORDER BY DATE(timestamp)
+    x: "date"
+    y: "rows"
+
+  - name: "Avg by Category"
+    type: "bar"
+    query: |
+      SELECT category, AVG(value) AS avg_value
+      FROM events_raw
+      GROUP BY category
+      ORDER BY avg_value DESC
+    x: "category"
+    y: "avg_value"
+
+  - name: "Daily Avg Value (from transform)"
+    type: "line"
+    query: "SELECT day, avg_val FROM daily_avg ORDER BY day"
+    x: "day"
+    y: "avg_val"
+
+
+#Goal: Point to one KPI and one chart and be able to determine where that comes from
